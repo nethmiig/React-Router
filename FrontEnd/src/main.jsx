@@ -1,43 +1,31 @@
-// Import necessary React and ReactDOM modules
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from 'react'
+import './index.css'
+import ReactDOM from 'react-dom/client'
 
-// Import ErrorPage component from './error-page'
-import ErrorPage from './error-page';
-
-// Import Contact component along with its loader and action functions
-import Contact, {
-  loader as contactLoader,
-  action as contactAction,
-} from './routes/contact';
-
-// Import Root component along with its loader and action functions
-import Root, { 
-  loader as rootLoader,
-  action as rootAction,
-} from "./routes/root";
-
-// Import createBrowserRouter and RouterProvider from 'react-router-dom'
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
 
-// Import styles from './index.css'
-import "./index.css";
 
-// Import EditContact component along with its action function
+import Root, {
+  loader as rootLoader,
+  action as rootAction,
+} from "./routes/root";
+
+import Contact, {
+  loader as contactLoader,
+  action as contactAction,
+} from './routes/contact';
+
 import EditContact, {
   action as editAction,
 } from './routes/edit';
-
-// Import Index component
-import Index from './routes/index';
-
-// Import destroyAction from './routes/destroy'
+import ErrorPage from './error-page';
 import { action as destroyAction } from "./routes/destroy";
+import Index from "./routes/index";
 
-// Create a browser router with specified routes and components
+// Create a BrowserRouter with defined routes
 const router = createBrowserRouter([
   {
     path: "/",
@@ -45,44 +33,38 @@ const router = createBrowserRouter([
     loader: rootLoader,
     action: rootAction,
     errorElement: <ErrorPage />,
-
-    // Nested routes within the Root component
     children: [
       {
         errorElement: <ErrorPage />,
         children: [
-          { index: true, element: <Index /> },
-
-          // Route for displaying a contact's details
-          {
-            path: "contacts/:contactId",
-            element: <Contact />,
-            loader: contactLoader,
-            action: contactAction,
-          },
-
-          // Route for editing a contact
-          {
-            path: "contacts/:contactId/edit",
-            element: <EditContact />,
-            loader: contactLoader,
-            action: editAction,
-          },
-
-          // Route for destroying a contact
-          {
-            path: "contacts/:contactId/destroy",
-            action: destroyAction,
-          },
+          { index: true, element: <Index /> }, // Index route
+        {
+          path: "contacts/:contactId",
+          element: <Contact />,
+          loader: contactLoader,
+          action: contactAction,
+        },
+        {
+          path: "contacts/:contactId/edit",
+          element: <EditContact />,
+          loader: contactLoader,
+          action: editAction,
+        },
+        {
+          path: "contacts/:contactId/destroy",
+          action: destroyAction,
+          errorElement: <div>Oops! There was an error.</div>,
+        },
         ],
-      }
+      },
     ],
   },
+
 ]);
 
-// Render the application with the router using React.StrictMode
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>  
+// Render the BrowserRouter using React StrictMode
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode> 
-);
+  </React.StrictMode>,
+)

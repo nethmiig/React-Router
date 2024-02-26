@@ -1,44 +1,72 @@
-// Importing required modules
-const express = require("express");
-const Contact = require("../models/contactModels.js");
-const bodyParser = require("body-parser");
+import express from 'express';
+import Contact from '../models/contactModels.js';
 
-// Creating an instance of the Express router
-const contact_router = express();
+const router = express.Router();
 
-// Setting up middleware to parse incoming request bodies
-contact_router.use(bodyParser.urlencoded({ extended: false }));
+// Route to get all contacts
+router.get('/', async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    res.json(contacts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-// Handling POST requests to "/api/contact"
-contact_router.post("/api/contact", async function (req, res) {
-    // Extracting data from the request body
-    const { first, last, avatarUrl, notes, twitter } = req.body;
-
-    // Creating a new Contact instance with the extracted data
-    const contact = new Contact({
-        first: first,
-        last: last,
-        avatarUrl: avatarUrl,
-        notes: notes,
-        twitter: twitter,
+// Route to create a new contact
+router.post('/', async function(req, res) {
+    const c = new Contact({
+     first: "First Name",
+     last: "Last Name",
+     twitter: "@yourTwitterHandle",
+     avatar: "Image URL",
+     notes: "Notes"   
     });
-
     try {
-        // Saving the contact to the database and responding with success message
-        await contact.save().then(function (contact) {
-            return res.status(200).json({
-                success: true,
-                message: "Contact saved!",
-            });
-        });
+        const contact = await c.save();
+        res.status(201).json(contact);
     } catch (error) {
-        // Handling errors and responding with an error message
-        return res.status(400).json({
-            success: false,
-            message: error.message,
-        });
+        res.status(400).json({ message: error.message });
     }
 });
 
-// Exporting the contact_router for use in other files
-module.exports = contact_router;
+// Route to get a specific contact by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.json(contact);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to update a contact by ID
+router.put('/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.json(contact);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to delete a contact by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findByIdAndDelete(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.json({ message: 'Contact deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export default router;

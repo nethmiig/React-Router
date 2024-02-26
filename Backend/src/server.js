@@ -1,53 +1,35 @@
-// Load environment variables from a .env file
-require('dotenv').config();
+// Import express using ESM syntax
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import contactRoutes from './routes/contactRoutes.js';
+import dotenv from 'dotenv';
 
-// Importing required modules
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+// Load environment variables from .env file
+dotenv.config();
 
-// Importing the contact router from the defined route file
-const contact_router = require('./routes/contactRoutes');
-
-// Creating an instance of Express
 const app = express();
 
-// Setting up the port to either use the environment variable or fallback to 3000
-const port = process.env.PORT || 3000;
+// Middleware to parse JSON bodies
+app.use(express.json());
 
-// Enabling Cross-Origin Resource Sharing (CORS)
+// Enable CORS for all routes
 app.use(cors());
 
-// Using the contact_router for handling routes
-app.use(contact_router);
-console.log('Contact routes loaded successfully.');
+// Retrieve the port and MongoDB URI from environment variables
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI;
 
-// Adding a default route for "GET /"
-app.get('/', (req, res) => {
-  res.send('Welcome to your app!');
-});
+// Connect to MongoDB
+mongoose.connect(MONGO_URI)
+    .then(() => {
+        console.log('Connected to MongoDB');
+        // Start the server once MongoDB connection is established
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch(err => console.error('Error connecting to MongoDB:', err));
 
-// Setting up MongoDB connection using the provided URI or a fallback connection string
-const mongoURI = process.env.MONGODB_URI || 'fallback_connection_string';
-
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-// Getting the MongoDB connection instance
-const db = mongoose.connection;
-
-// Handling MongoDB connection errors
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-// Executing code once the MongoDB connection is open
-db.once('open', function() {
-  // You can add any initialization logic here
-});
-
-// Starting the server and listening on the specified port
-app.listen(port, function() {
-  console.log(`Server is running on port ${port}`);
-});
+// Routes
+app.use('/contacts', contactRoutes); // Use contactRoutes for /contacts route
